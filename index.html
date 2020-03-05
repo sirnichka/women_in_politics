@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Women in politics</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<style>
+    .legend {
+        background-color: #fff;
+        border-radius: 3px;
+        bottom: 30px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        padding: 10px;
+        position: absolute;
+        right: 10px;
+        z-index: 1;
+    }
+
+    .legend h4 {
+        margin: 0 0 10px;
+    }
+
+    .legend div span {
+        border-radius: 50%;
+        display: inline-block;
+        height: 10px;
+        margin-right: 5px;
+        width: 10px;
+    }
+</style>
+
+<style>
+	.mapboxgl-popup {
+		max-width: 400px;
+		font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+	}
+</style>
+
+<script type="text/javascript" src="woman_in_politics.js" /></script>
+
+<div id="map"></div>
+
+<div id="state-legend" class="legend">
+    <h4>Women in politics, %</h4>
+    <div><span style="background-color: #0000CD"></span>100</div>
+	<div><span style="background-color: #001DD8"></span>80</div>
+	<div><span style="background-color: #314DFF"></span>60</div>
+	<div><span style="background-color: #586FFF"></span>40</div>
+	<div><span style="background-color: #7BB5FF"></span>20</div>
+    <div><span style="background-color: #C4DEFF"></span>0</div>
+</div>
+
+
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiaXJhZCIsImEiOiJjanVjdTE0YzgwaXhtNDNwZG9sNWt5eGl3In0.51FlFPCOJBznfpPRscP05A';
+    var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/irad/ck7duurpp0qqr1iobi6nldzwo',
+        center: [20, 50],
+        minZoom: 2,
+		maxZoom: 3,
+        zoom: 2
+    });
+
+	
+    map.on('load', function() {
+	
+		map.addSource('womanSource', {
+			'type': 'geojson',
+			'data': wooomm
+		});
+		
+        map.addLayer(
+		{
+                'id': 'wom',
+                'source': 'womanSource',
+                'type': 'fill',
+                'paint': {
+                    'fill-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'politics'],
+                        0,
+                        '#C4DEFF',
+                        20,
+                        '#7BB5FF',
+                        40,
+                        '#586FFF',
+                        60,
+                        '#314DFF',
+                        80,
+                        '#001DD8',
+                        100,
+                        '#334EFF',
+                        999,
+                        '#c8c8c8'
+                    ],
+                    'fill-opacity': 0.75
+                }
+            }
+		);
+		
+		var popup = new mapboxgl.Popup({
+			closeButton: false,
+			closeOnClick: false
+		});
+		
+		map.on('mousemove', 'wom', function(e) {
+		
+			map.getCanvas().style.cursor = 'pointer';
+			
+			var coordinates = e.features[0].geometry.coordinates.slice();
+			var description = e.features[0].properties["NAME_ENG"] + " <br/>"
+			var description2 = e.features[0].properties["politics"]
+			if (description2 == 1000) {description2 = 'no data'}
+			popup.setLngLat(e.lngLat).setHTML(description + description2).addTo(map);
+
+		});
+		
+		map.on('mouseleave', 'wom', function() {
+			map.getCanvas().style.cursor = '';
+			popup.remove();
+		});
+
+	});
+	
+
+</script>
+
+</body>
+</html>
